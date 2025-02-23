@@ -1,4 +1,3 @@
-const { error } = require('console');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -12,10 +11,19 @@ app.get('/', (req, res) => {
 });
 
 app.post('/trains', (req, res) => {
-	const filePath = path.join(__dirname, '../data/trains.json');
+	const requiredKeys = [
+		'trainExpressName',
+		'countryOfOrigin',
+		'yearOfConstruction',
+		'maxKilometerPerHour',
+		'destinationFrom',
+		'destinationTo',
+	];
 
-	if (!req.body) {
-		return res.status(400).json({ error: 'Brak danych' });
+	const filePath = path.resolve(__dirname, '../data/trains.json');
+
+	if (!req.body || !requiredKeys.every((key) => key in req.body)) {
+		return res.status(400).json({ error: 'Plik nie zawiera wystarczających informacji o pociągu' });
 	}
 
 	try {
@@ -24,19 +32,18 @@ app.post('/trains', (req, res) => {
 
 		const newTrain = {
 			id: trains.length + 1,
-			trainExpressName: req.trainExpressName,
-			countryOfOrigin: req.countryOfOrigin,
-			yearOfConstruction: req.yearOfConstruction,
-			maxKilometerPerHour: req.maxKilometerPerHour,
-			destinationFrom: req.destinationFrom,
-			destinationTo: req.destinationTo,
+			trainExpressName: req.body.trainExpressName,
+			countryOfOrigin: req.body.countryOfOrigin,
+			yearOfConstruction: req.body.yearOfConstruction,
+			maxKilometerPerHour: req.body.maxKilometerPerHour,
+			destinationFrom: req.body.destinationFrom,
+			destinationTo: req.body.destinationTo,
 		};
 
 		trains.push(newTrain);
-		fs.writeFileSync(filePath, JSON.stringify(trains, null, 2), 'utf-8');
+		fs.promises.writeFileSync(filePath, JSON.stringify(trains, null, 2), 'utf-8');
 		res.status(201).json({ message: `Nowy pociąg dodany: ${req.trainExpressName}.` });
 	} catch (error) {
-		console.error('Błąd');
 		res.status(500).json({ error: 'Błąd serwera' });
 	}
 });
