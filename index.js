@@ -5,9 +5,10 @@ const path = require('path');
 const app = express();
 
 const PORT = process.env.PORT || 4000;
+const filePath = path.resolve(__dirname, '../data/trains.json');
 
 app.get('/', (req, res) => {
-	res.send('Hello from Nerdbord!');
+	res.sendFile(filePath);
 });
 
 app.post('/trains', (req, res) => {
@@ -19,8 +20,6 @@ app.post('/trains', (req, res) => {
 		'destinationFrom',
 		'destinationTo',
 	];
-
-	const filePath = path.resolve(__dirname, '../data/trains.json');
 
 	if (!req.body || !requiredKeys.every((key) => key in req.body)) {
 		return res.status(400).json({ error: 'Plik nie zawiera wystarczających informacji o pociągu' });
